@@ -1,0 +1,112 @@
+---
+title       : Iris Presentation
+subtitle    : Slidify project
+author      : felixds
+job         : Coursera Data Product module
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : [shiny,quiz]            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+
+```{r, echo=FALSE,eval=TRUE}
+library(shiny)
+library(shinyapps)
+
+```
+
+## Iris Data Set structure
+```{r, echo=TRUE} 
+# Below we'll see the iris data set structure.
+str(iris)
+```
+
+---
+
+## Plot Iris Data Set
+```{r, echo=TRUE} 
+# Here the relationship among features.
+plot(iris)
+```
+
+---
+
+
+## Kmeans Iris App
+
+```{r cache=FALSE, echo=FALSE,eval=TRUE}
+shinyApp(
+
+ui =pageWithSidebar(
+  headerPanel('Iris Data Set for Clustering'),
+  sidebarPanel(
+    radioButtons('xcol', 'X data input', names(iris[,-5])),
+    radioButtons('ycol', 'Y data input', names(iris[,-5]),
+                selected=names(iris)[[2]]),
+    sliderInput('k', 'Number of clusters', 2,
+                 min = 1, max = 10)
+    
+  ),
+  
+  mainPanel(
+    plotOutput('clusterplot'),
+    verbatimTextOutput("text"),
+    p("Shiny Apps Guide:  "),
+    p("1.- The Shiny App uses Iris data set which contains examples of iris plants.  "),
+    p(" the App use Kmeans function to group values by number of clusters.  "),
+    p("2.- The X and Y Data input value allow to change between differents values of plants:  "),
+    p(" like length and widh in cm. just to choose the value adn that's all.  "),
+    p("3.- The slidebar of number of clusters allow to choose the number of cluster to be  "),
+    p(" used by Kmeans, jut move horizontally to increase or decrease it.  "),
+    p("4.- the plot visualize the result after choosing X and Y data input value and number "),
+    p(" of clusters, then we'll see group by cluster and with differen colours the result.  "),
+    p("5.- finally we can see the average of neighbors depending on our X and Y choices and"),
+    p(" the number of cluster chosen.  ")
+  )
+),
+  
+server = function(input, output, session) {
+  
+  # new data frame with input data
+  selectedData <- reactive({
+    iris[, c(input$xcol, input$ycol)]
+  })
+  
+  # clustering by number of clusters
+  k <- reactive({kmeans(selectedData(), input$k)})
+  
+  output$clusterplot <- renderPlot({
+    par(mar = c(5.1, 4.1, 0, 1))
+    plot(selectedData(),
+         col = k()$cluster,
+         pch = 10, cex = 2)
+    points(k()$centers, pch = 7, cex = 3, lwd = 3)
+  })
+  
+  # Average by K value
+  output$text <- renderText({
+    paste0("Average neighbors by cluster:  ", 
+           (length(iris$Sepal.Length) / input$k))
+  })
+  
+}
+  
+)
+```
+
+
+---
+## Acknowledgement
+
+
+
+
+
+
+
+
+
+
+
